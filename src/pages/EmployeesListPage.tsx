@@ -78,7 +78,6 @@ export default function EmployeesListPage() {
             sx={{
               '& .MuiTableCell-head': {
                 backgroundColor: '#F4F6F8',
-                fontFamily: 'Public Sans, system-ui',
                 fontWeight: 600,
                 fontSize: 12,
                 lineHeight: '18px',
@@ -105,7 +104,6 @@ export default function EmployeesListPage() {
                     label={emp.status === 'active' ? 'Ativo' : 'Inativo'}
                     size="small"
                     sx={{
-                      fontFamily: 'Public Sans, system-ui',
                       fontSize: 12,
                       fontWeight: 500,
                       borderRadius: 999,

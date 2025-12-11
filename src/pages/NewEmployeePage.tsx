@@ -1,18 +1,10 @@
-import { Typography } from '@mui/material';
+import { Box } from '@mui/material';
+import EmployeeFormWizard from '../components/employees/EmployeeFormWizard';
 
 export default function NewEmployeePage() {
   return (
-    <>
-      <Typography
-        sx={{
-          fontWeight: 700,
-          fontSize: 24,
-          lineHeight: '36px',
-          letterSpacing: 0,
-        }}
-      >
-        Cadastrar Colaborador
-      </Typography>
-    </>
+    <Box>
+      <EmployeeFormWizard />
+    </Box>
   );
 }
