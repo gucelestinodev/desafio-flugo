@@ -1,5 +1,4 @@
-// src/components/layout/Header.tsx
-import { Avatar, Box, Typography } from '@mui/material';
+import { Avatar, Box } from '@mui/material';
 
 export default function Header() {
   return (

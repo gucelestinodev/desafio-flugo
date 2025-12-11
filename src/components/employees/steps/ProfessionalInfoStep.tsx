@@ -1,5 +1,5 @@
 import { Controller, useFormContext } from 'react-hook-form';
-import { TextField, Box, Typography } from '@mui/material';
+import { TextField, Box, Typography, MenuItem } from '@mui/material';
 import type { EmployeeFormValues } from '../employeeSchema';
 
 const inputSx = {
@@ -27,6 +27,13 @@ const inputSx = {
   },
 };
 
+const departmentOptions = [
+  { value: 'design', label: 'Design' },
+  { value: 'ti', label: 'Informatica' },
+  { value: 'marketing', label: 'Marketing' },
+  { value: 'produto', label: 'Produto' },
+];
+
 export default function ProfessionalInfoStep() {
   const { control } = useFormContext<EmployeeFormValues>();
 
@@ -38,28 +45,50 @@ export default function ProfessionalInfoStep() {
           fontWeight: 700,
           fontSize: 24,
           lineHeight: '28px',
-          color: '#637381'
+          color: '#637381',
         }}
       >
         Informações Profissionais
       </Typography>
-
       <Controller
         name="department"
         control={control}
         render={({ field, fieldState }) => (
           <TextField
             {...field}
-            label="Departamento"
+            select
             fullWidth
             margin="normal"
             error={!!fieldState.error}
             helperText={fieldState.error?.message}
             sx={inputSx}
-          />
+            slotProps={{
+              select: {
+                displayEmpty: true,
+                renderValue: (selected: unknown): React.ReactNode => {
+                  if (!selected) {
+                    return (
+                      <span style={{ color: '#9CA3AF' }}>
+                        Selecione um departamento
+                      </span>
+                    );
+                  }
+                  const option = departmentOptions.find(
+                    (opt) => opt.value === selected,
+                  );
+                  return option?.label ?? (selected as string);
+                },
+              },
+            }}
+          >
+            {departmentOptions.map((opt) => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </TextField>
         )}
       />
-
       <Controller
         name="role"
         control={control}
