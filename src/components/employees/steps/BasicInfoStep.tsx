@@ -59,14 +59,6 @@ export default function BasicInfoStep() {
       />
 
       <Controller
-        name="phone"
-        control={control}
-        render={({ field, fieldState }) => (
-          <TextField {...field} label="Telefone *" placeholder="(99) 99999-9999" fullWidth margin="normal" error={!!fieldState.error} helperText={fieldState.error?.message} sx={inputSx} />
-        )}
-      />
-
-      <Controller
         name="isActive"
         control={control}
         render={({ field }) => (

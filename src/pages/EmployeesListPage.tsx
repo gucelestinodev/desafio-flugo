@@ -12,16 +12,54 @@ import {
   Typography,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { listEmployees } from '../services/employees';
+import { listEmployees, deleteEmployee } from '../services/employees';
 import type { Employee } from '../types/employee';
+import EmployeeDetailDialog from '../components/employees/modais/EmployeeDetailDialog';
+import ConfirmDeleteDialog from '../components/employees/modais/ConfirmDeleteDialog';
 
 export default function EmployeesListPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [selected, setSelected] = useState<Employee | null>(null);
+  const [openDetail, setOpenDetail] = useState(false);
+  const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     listEmployees().then(setEmployees);
   }, []);
+
+  const handleRowClick = (emp: Employee) => {
+    setSelected(emp);
+    setOpenDetail(true);
+  };
+
+  const handleCloseDetail = () => {
+    setOpenDetail(false);
+  };
+
+  const handleEdit = () => {
+    if (!selected) return;
+    setOpenDetail(false);
+    navigate(`/colaboradores/${selected.id}`);
+  };
+
+  const handleAskDelete = () => {
+    setOpenDetail(false);
+    setOpenConfirmDelete(true);
+  };
+
+  const handleCancelDelete = () => {
+    setOpenConfirmDelete(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selected) return;
+    await deleteEmployee(selected.id);
+    setEmployees(prev => prev.filter(e => e.id !== selected.id));
+    setOpenConfirmDelete(false);
+    setSelected(null);
+  };
 
   return (
     <Box>
@@ -79,9 +117,9 @@ export default function EmployeesListPage() {
               '& .MuiTableCell-head': {
                 backgroundColor: '#F4F6F8',
                 fontWeight: 600,
-                fontSize: 12,
-                lineHeight: '18px',
-                color: '#6B7280',
+                fontSize: 14,
+                lineHeight: '24px',
+                color: '#637381',
               },
             }}
           >
@@ -93,9 +131,22 @@ export default function EmployeesListPage() {
             </TableRow>
           </TableHead>
 
-          <TableBody>
-            {employees.map((emp) => (
-              <TableRow key={emp.id}>
+          <TableBody
+            sx={{
+              '& .MuiTableCell-root': {
+                fontWeight: 400,
+                fontSize: 14,
+                lineHeight: '22px',
+              },
+            }}
+          >
+            {employees.map(emp => (
+              <TableRow
+                key={emp.id}
+                hover
+                onClick={() => handleRowClick(emp)}
+                sx={{ cursor: 'pointer' }}
+              >
                 <TableCell>{emp.name}</TableCell>
                 <TableCell>{emp.email}</TableCell>
                 <TableCell>{emp.department}</TableCell>
@@ -107,10 +158,10 @@ export default function EmployeesListPage() {
                       fontSize: 12,
                       fontWeight: 700,
                       borderRadius: 2,
-                      px: 1,
-                      backgroundColor: emp.status === 'active'
-                        ? '#22C55E29'
-                        : '#FF563029',
+                      backgroundColor:
+                        emp.status === 'active'
+                          ? '#22C55E29'
+                          : '#FF563029',
                       color:
                         emp.status === 'active' ? '#118D57' : '#B71D18',
                     }}
@@ -131,6 +182,21 @@ export default function EmployeesListPage() {
           </TableBody>
         </Table>
       </Paper>
+
+      <EmployeeDetailDialog
+        open={openDetail}
+        employee={selected}
+        onClose={handleCloseDetail}
+        onEdit={handleEdit}
+        onAskDelete={handleAskDelete}
+      />
+
+      <ConfirmDeleteDialog
+        open={openConfirmDelete}
+        employeeName={selected?.name}
+        onCancel={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+      />
     </Box>
   );
 }

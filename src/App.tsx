@@ -11,6 +11,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/colaboradores" />} />
           <Route path="/colaboradores" element={<EmployeesListPage />} />
           <Route path="/colaboradores/novo" element={<NewEmployeePage />} />
+          <Route path="/colaboradores/:id" element={<NewEmployeePage />} />
         </Routes>
       </AppLayout>
     </BrowserRouter>

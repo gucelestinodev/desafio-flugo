@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Button, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,8 +7,13 @@ import BasicInfoStep from './steps/BasicInfoStep';
 import ProfessionalInfoStep from './steps/ProfessionalInfoStep';
 import AddressContactStep from './steps/AddressContactStep';
 import BankingStep from './steps/BankingStep';
-import { createEmployee } from '../../services/employees';
+import { createEmployee, getEmployee, updateEmployee } from '../../services/employees';
 import { useNavigate } from 'react-router-dom';
+import type { Employee, EmployeeStatus } from '../../types/employee';
+
+type EmployeeFormWizardProps = {
+  employeeId?: string;
+};
 
 const steps = [
   'Infos Básicas',
@@ -17,28 +22,25 @@ const steps = [
   'Dados Bancários',
 ];
 
-export default function EmployeeFormWizard() {
+export default function EmployeeFormWizard({ employeeId }: EmployeeFormWizardProps) {
   const [activeStep, setActiveStep] = useState(0);
+  const isEdit = !!employeeId;
 
   const methods = useForm<EmployeeFormValues>({
     resolver: zodResolver(employeeSchema),
     defaultValues: {
-      // Básicas
       name: '',
       email: '',
       isActive: true,
       cpf: '',
       birthDate: '',
-      phone: '',
 
-      // Profissionais
       department: '',
       role: '',
       admissionDate: '',
       employmentType: '',
       workRegime: '',
 
-      // Endereço e Contato
       addressCep: '',
       addressStreet: '',
       addressNumber: '',
@@ -48,7 +50,6 @@ export default function EmployeeFormWizard() {
       addressState: '',
       contactPhone: '',
 
-      // Bancários
       bankName: '',
       bankAgency: '',
       bankAccount: '',
@@ -57,12 +58,51 @@ export default function EmployeeFormWizard() {
     mode: 'onChange',
   });
 
+  const { reset } = methods;
+
+  useEffect(() => {
+    if (!employeeId) return;
+
+    (async () => {
+      const emp = await getEmployee(employeeId);
+      if (!emp) return;
+
+      reset({
+        name: emp.name,
+        email: emp.email,
+        isActive: emp.status === 'active',
+        cpf: emp.cpf,
+        birthDate: emp.birthDate,
+
+        department: emp.department,
+        role: emp.role,
+        admissionDate: emp.admissionDate,
+        employmentType: emp.employmentType,
+        workRegime: emp.workRegime,
+
+        addressCep: emp.address.cep,
+        addressStreet: emp.address.street,
+        addressNumber: emp.address.number,
+        addressComplement: emp.address.complement ?? '',
+        addressNeighborhood: emp.address.neighborhood,
+        addressCity: emp.address.city,
+        addressState: emp.address.state,
+        contactPhone: emp.address.contactPhone,
+
+        bankName: emp.bank.bankCode,
+        bankAgency: emp.bank.agency,
+        bankAccount: emp.bank.account,
+        bankPix: emp.bank.pixKey,
+      });
+    })();
+  }, [employeeId, reset]);
+
   const navigate = useNavigate();
   const progressPercent = Math.round((activeStep / (steps.length - 1)) * 100);
 
   const handleNext = async () => {
     const fieldsToValidate: Record<number, (keyof EmployeeFormValues)[]> = {
-      0: ['name', 'email', 'isActive', 'cpf', 'birthDate', 'phone'],
+      0: ['name', 'email', 'cpf', 'birthDate', 'isActive'],
       1: ['department', 'role', 'admissionDate', 'employmentType', 'workRegime'],
       2: [
         'addressCep',
@@ -81,39 +121,46 @@ export default function EmployeeFormWizard() {
 
     if (activeStep === steps.length - 1) {
       const values = methods.getValues();
+
+      const payload: Omit<Employee, 'id'> = {
+        name: values.name,
+        email: values.email,
+        cpf: values.cpf,
+        birthDate: values.birthDate,
+        status: (values.isActive ? 'active' : 'inactive') as EmployeeStatus,
+
+        department: values.department,
+        role: values.role,
+        admissionDate: values.admissionDate,
+        employmentType: values.employmentType,
+        workRegime: values.workRegime,
+
+        address: {
+          cep: values.addressCep,
+          street: values.addressStreet,
+          number: values.addressNumber,
+          complement: values.addressComplement,
+          neighborhood: values.addressNeighborhood,
+          city: values.addressCity,
+          state: values.addressState,
+          contactPhone: values.contactPhone,
+        },
+
+        bank: {
+          bankCode: values.bankName,
+          agency: values.bankAgency,
+          account: values.bankAccount,
+          pixKey: values.bankPix,
+        },
+      };
+
       try {
-        await createEmployee({
-          name: values.name,
-          email: values.email,
-          cpf: values.cpf,
-          birthDate: values.birthDate,
-          phone: values.phone,
-          status: values.isActive ? 'active' : 'inactive',
+        if (isEdit && employeeId) {
+          await updateEmployee(employeeId, payload);
+        } else {
+          await createEmployee(payload);
+        }
 
-          department: values.department,
-          role: values.role,
-          admissionDate: values.admissionDate,
-          employmentType: values.employmentType,
-          workRegime: values.workRegime,
-
-          address: {
-            cep: values.addressCep,
-            street: values.addressStreet,
-            number: values.addressNumber,
-            complement: values.addressComplement,
-            neighborhood: values.addressNeighborhood,
-            city: values.addressCity,
-            state: values.addressState,
-            contactPhone: values.contactPhone,
-          },
-
-          bank: {
-            bankCode: values.bankName,
-            agency: values.bankAgency,
-            account: values.bankAccount,
-            pixKey: values.bankPix,
-          },
-        }); 
         navigate('/colaboradores');
       } catch (err) {
         console.error('Erro ao salvar funcionário', err);

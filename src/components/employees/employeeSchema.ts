@@ -1,17 +1,11 @@
 import { z } from 'zod';
 
-const onlyDigits = (v: string) => v.replace(/\D/g, '');
-
 export const employeeSchema = z.object({
   name: z.string().min(1, 'Nome obrigatório'),
   email: z.string().email('E-mail inválido'),
   isActive: z.boolean(),
-  cpf: z
-    .string()
-    .min(11, 'CPF obrigatório')
-    .refine((v) => onlyDigits(v).length === 11, 'CPF deve ter 11 dígitos'),
+  cpf: z.string().min(11, 'CPF obrigatório'),
   birthDate: z.string().min(1, 'Data de nascimento obrigatória'),
-  phone: z.string().min(8, 'Telefone obrigatório'),
 
   department: z.string().min(1, 'Departamento obrigatório'),
   role: z.string().min(1, 'Cargo obrigatório'),
