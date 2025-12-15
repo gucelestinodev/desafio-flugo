@@ -105,13 +105,14 @@ export default function EmployeesListPage() {
                     size="small"
                     sx={{
                       fontSize: 12,
-                      fontWeight: 500,
-                      borderRadius: 999,
-                      px: 1.5,
-                      backgroundColor:
-                        emp.status === 'active' ? '#DCFCE7' : '#FEE2E2',
+                      fontWeight: 700,
+                      borderRadius: 2,
+                      px: 1,
+                      backgroundColor: emp.status === 'active'
+                        ? '#22C55E29'
+                        : '#FF563029',
                       color:
-                        emp.status === 'active' ? '#16A34A' : '#DC2626',
+                        emp.status === 'active' ? '#118D57' : '#B71D18',
                     }}
                   />
                 </TableCell>
